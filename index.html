@@ -235,11 +235,11 @@ function startSync(){
   stream("/px.json",function(p,d){if(p==="/"){if(d)for(var k in d)pxApply(k,d[k])}else pxApply(p.slice(1),d)});
   stream("/chat.json?orderBy=%22%24key%22&limitToLast=60",function(p,d){if(p==="/"){if(d)Object.keys(d).sort().forEach(function(k){addC(k,d[k])})}else if(d&&p.split("/").length===2)addC(p.slice(1),d)},function(ok){$("cst").textContent=ok?"● live":"(reconnecting)"});
   stream("/meta.json",function(p,d){var wb=isBanned(),wa=isAdmin(),wm=isMuted(),wh=isHelper();metaApply(p.split("/").filter(Boolean),d);if(!wb&&isBanned())toast("You have been banned by an admin.");if(!wm&&isMuted())toast("You have been muted by a moderator.");drawPicker();renderAdmins();renderHelpers();if((wa!==isAdmin()||wh!==isHelper())&&$("prof").classList.contains("show"))renderProf()});
-  beat();pollPres();setInterval(beat,12000);setInterval(pollPres,10000);
-  window.addEventListener("pagehide",function(){try{fetch(FB+"/presence/"+TAB+".json",{method:"DELETE",keepalive:true})}catch(e){}});
+  pollPres();setInterval(beat,12000);setInterval(pollPres,10000);
+  window.addEventListener("pagehide",function(e){if(e.persisted)return;try{fetch(FB+"/presence/"+TAB+".json",{method:"DELETE",keepalive:true})}catch(x){}});document.addEventListener("visibilitychange",function(){if(!document.hidden)pollPres()});window.addEventListener("pageshow",function(e){if(e.persisted)pollPres()});
 }
-function beat(){api("PUT","/presence/"+TAB,Date.now()).catch(function(){})}
-function pollPres(){api("GET","/presence").then(function(o){o=o||{};var now=Date.now(),n=0;for(var k in o){var age=now-o[k];if(age<60000||k===TAB)n++;else if(age>180000)api("DELETE","/presence/"+k).catch(function(){})}$("onT").textContent=Math.max(1,n)+" online"}).catch(function(){})}
+function beat(){return api("PUT","/presence/"+TAB,{".sv":"timestamp"}).catch(function(){})}
+function pollPres(){beat().then(function(){return api("GET","/presence")}).then(function(o){o=o||{};var ref=typeof o[TAB]==="number"?o[TAB]:0,k;if(!ref)for(k in o)if(+o[k]>ref)ref=+o[k];var n=0,self=0;for(k in o){var age=ref-o[k];if(k===TAB){self=1;n++}else if(age<150000)n++;else if(age>420000)api("DELETE","/presence/"+k).catch(function(){})}if(!self)n++;$("onT").textContent=Math.max(1,n)+" online"}).catch(function(){})}
 
 /* ---- bans / announcements ---- */
 function isMuted(){return !!(acct&&(muted.has(ses)||muted.has(acct.dn.toLowerCase())))}
