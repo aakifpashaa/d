@@ -52,7 +52,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#c4e4ff;color:var(--fg
 @keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .av{flex:none;width:30px;height:30px;border-radius:50%;color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .mb{flex:1;min-width:0;word-break:break-word}.mn{font-weight:700;font-size:12px;opacity:.85}.mt{flex:none;font-size:11px;opacity:.6;margin-left:6px}
-.own{color:#d99a00}img.logo{display:block;margin:0 auto 8px;width:96px;height:96px;object-fit:contain}#bDc{left:calc(26px + var(--b)*2)}.btn svg.dc{fill:#5865F2;stroke:none;width:62%;height:62%}.dots{display:flex;gap:6px;justify-content:center;margin:14px 0 4px}.dots i{width:8px;height:8px;border-radius:50%;background:var(--line)}.dots i.on{background:var(--acc)}.htag{background:#2563eb}.tag{display:inline-block;background:#d99a00;color:#fff;font-size:10px;border-radius:5px;padding:0 5px;margin-left:4px;vertical-align:middle}
+.own{color:#d99a00}#brp{position:fixed;right:calc(18px + var(--b));bottom:calc(env(safe-area-inset-bottom,0px) + 56px + var(--b));z-index:6;background:var(--card);border:2px solid var(--ink);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:6px;box-shadow:0 3px 0 var(--ink);transform-origin:bottom right}#brp button{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:96px;padding:6px 10px;border-radius:6px;border:2px solid var(--line);background:var(--card);color:var(--fg);font:inherit;font-weight:700;cursor:pointer}#brp button.sel{border-color:var(--fg);outline:2px solid var(--acc);outline-offset:1px}#brp button.lk{opacity:.55}img.logo{display:block;margin:0 auto 8px;width:96px;height:96px;object-fit:contain}#bDc{left:calc(26px + var(--b)*2)}.btn svg.dc{fill:#5865F2;stroke:none;width:62%;height:62%}.dots{display:flex;gap:6px;justify-content:center;margin:14px 0 4px}.dots i{width:8px;height:8px;border-radius:50%;background:var(--line)}.dots i.on{background:var(--acc)}.htag{background:#2563eb}.tag{display:inline-block;background:#d99a00;color:#fff;font-size:10px;border-radius:5px;padding:0 5px;margin-left:4px;vertical-align:middle}
 #cf{display:flex;gap:6px;padding:8px;border-top:1px solid var(--line)}
 input[type=text],input[type=password],input[type=number]{flex:1;min-width:0;padding:9px 10px;border-radius:8px;border:2px solid var(--line);background:var(--bg);color:var(--fg);font-size:15px}
 .pb{padding:9px 14px;border-radius:8px;border:2px solid var(--ink);background:var(--acc);color:#fff;font-weight:800;cursor:pointer;box-shadow:0 2px 0 var(--ink);transition:transform .08s,box-shadow .08s}.pb:active{transform:translateY(2px);box-shadow:none}
@@ -92,6 +92,7 @@ select{flex:1;min-width:0;padding:9px 10px;border-radius:8px;border:2px solid va
 <button class="btn B" id="bPen" title="Pen"><svg viewBox="0 0 24 24"><path d="M4 20l1-5L16 4l4 4L9 19zM14 6l4 4"/></svg></button>
 <button class="btn" id="bXY" title="Center coordinates (tap to copy)">0,0</button>
 <div id="pal" class="pop"></div>
+<div id="brp" class="pop"></div>
 <div id="chat" class="pop"><h4>Chat <span id="cst" style="font-weight:400;font-size:12px;opacity:.6"></span></h4><div id="msgs"></div>
 <div id="cf"><input type="text" id="ci" maxlength="200" placeholder="Type a message…"><button class="pb" id="cs">Send</button></div></div>
 
@@ -184,8 +185,8 @@ var nc=new Map();function near(r,g,b){var k=r<<16|g<<8|b,v=nc.get(k);if(v!==unde
 function tplColor(x,y){for(var i=TP.length-1;i>=0;i--){var t=TP[i];if(!t.vis||!t.td)continue;var px=x-(t.x+OX),py=y-(t.y+OY);if(px<0||py<0||px>=t.w||py>=t.h)continue;var o=(py*t.w+px)*4,d=t.td.data;if(d[o+3]<128)continue;return near(d[o],d[o+1],d[o+2])}return -1}
 var lastNL=0;
 function needLogin(m){if(Date.now()-lastNL<1500)return;lastNL=Date.now();toast(m);if(acct&&!acct.f){openFsel();return}renderProf();$("prof").classList.add("show")}
-function stamp(cx,cy,tm){if(!acct){needLogin("Log in or sign up to place pixels");return}if(!acct.f){needLogin("Choose a faction to play");return}if(isBanned()){toast("You are banned and cannot place pixels.");return}var r=brush===3?1:0;for(var dy=-r;dy<=r;dy++)for(var dx=-r;dx<=r;dx++){var x=cx+dx,y=cy+dy;if(!isLand(x,y))continue;var c=tm?tplColor(x,y):col;if(c<0||pm.get(y*W+x)===c)continue;
-if(!spend()){toast("Out of stock, please wait!");return}setPx(x,y,c);q.push([x,y,c])}}
+function stamp(cx,cy,tm){if(!acct){needLogin("Log in or sign up to place pixels");return}if(!acct.f){needLogin("Choose a faction to play");return}if(isBanned()){toast("You are banned and cannot place pixels.");return}if(brush>1){var rq=0;BRS.forEach(function(e){if(e[0]===brush)rq=e[1]});if(!brOK(rq)){brush=1;$("bBr").textContent="1x1"}}var r=(brush-1)/2;for(var dy=-r;dy<=r;dy++)for(var dx=-r;dx<=r;dx++){var x=cx+dx,y=cy+dy;if(!isLand(x,y))continue;var c=tm?tplColor(x,y):col;if(c<0||pm.get(y*W+x)===c)continue;
+if(!spend()){toast("Out of stock, please wait!");return}setPx(x,y,c);q.push([x,y,c]);if(totalFor===ses){myTotal++;for(var bi=1;bi<BRS.length;bi++)if(myTotal===BRS[bi][1])toast(BRS[bi][0]+"x"+BRS[bi][0]+" brush unlocked!")}}}
 function cellAt(sx,sy){return[Math.floor((sx-tx)/s),Math.floor((sy-ty)/s)]}
 function paintAt(sx,sy,drag){var c=cellAt(sx,sy);stamp(c[0],c[1],drag&&cfg.pm===1)}
 function day(){return new Date(Date.now()+108e5).toISOString().slice(0,10)}
@@ -258,16 +259,21 @@ an.onfinish=function(){box.classList.remove("show");setTimeout(nextAnn,350)}}
 /* ---- UI ---- */
 var tt;function toast(m){var t=$("toast");t.textContent=m;t.style.display="block";clearTimeout(tt);tt=setTimeout(function(){t.style.display="none"},2400)}
 var pal=$("pal");PAL.forEach(function(c,i){var b=document.createElement("button");b.style.background=c;if(i===col)b.className="sel";b.onclick=function(){col=i;[].forEach.call(pal.children,function(x,j){x.className=j===i?"sel":""})};pal.appendChild(b)});
-$("bPal").onclick=function(){closeChat();pal.classList.toggle("show")};
-$("bChat").onclick=function(){var o=$("chat").classList.contains("show");pal.classList.remove("show");if(o)closeChat();else{$("chat").classList.add("show");$("msgs").scrollTop=1e9}};
-$("bBr").onclick=function(){brush=brush===1?3:1;this.textContent=brush+"x"+brush};
+$("bPal").onclick=function(){closeChat();$("brp").classList.remove("show");pal.classList.toggle("show")};
+$("bChat").onclick=function(){var o=$("chat").classList.contains("show");pal.classList.remove("show");$("brp").classList.remove("show");if(o)closeChat();else{$("chat").classList.add("show");$("msgs").scrollTop=1e9}};
+var BRS=[[1,0],[3,30000],[5,100000],[7,500000]],myTotal=null,totalFor=null,LOCKI='<svg viewBox="0 0 24 24" width="14" height="14" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>';
+function loadTotal(cb){if(!ses){if(cb)cb();return}var me=ses;api("GET","/stats/players/"+me+"/c").then(function(v){if(ses===me){myTotal=(+v||0)+q.length;totalFor=me}}).catch(function(){}).then(function(){if(cb)cb()})}
+function brOK(n){return n===0||ses===OWNER||(!!ses&&totalFor===ses&&myTotal>=n)}
+function renderBrp(){var p=$("brp");p.innerHTML="";BRS.forEach(function(e){var n=e[0],req=e[1],ok=brOK(req),b=document.createElement("button");b.className=(brush===n?"sel ":"")+(ok?"":"lk");b.innerHTML="<span>"+n+"x"+n+"</span>"+(ok?"":LOCKI);b.onclick=function(){if(!ok){var have=(ses&&totalFor===ses)?myTotal:0;toast(ses?("You need to place "+req.toLocaleString()+" pixels to unlock "+n+"x"+n+" (you have "+have.toLocaleString()+")"):("Log in and place "+req.toLocaleString()+" pixels to unlock "+n+"x"+n));return}brush=n;$("bBr").textContent=n+"x"+n;renderBrp();p.classList.remove("show")};p.appendChild(b)})}
+$("bBr").onclick=function(){closeChat();pal.classList.remove("show");var p=$("brp");if(p.classList.contains("show")){p.classList.remove("show");return}renderBrp();p.classList.add("show");if(ses&&totalFor!==ses)loadTotal(renderBrp)};
+if(ses)loadTotal();
 $("bPen").onclick=function(){pen=!pen;this.classList.toggle("on",pen)};
 $("go").onclick=function(){$("wel").classList.remove("show");if(!LS.g("pf_tut",0))tutOpen()};
 /* ---- tutorial for first-time visitors ---- */
 var TUT=[
 ["1. Create an account","<p>Tap the <b>profile button</b> (person icon, top-right) and choose <b>Sign up</b>.</p><p>Pick a username (3-16 letters, digits or _) and a password, then press <b>Create account</b>. Your account works on every device.</p>"],
 ["2. Choose your country","<p>After signing up you pick the nation you fight for. This is required to place pixels and chat.</p><p>You can switch any time: open your profile and press <b>Change country</b>. Choose <b>Rebels</b> if you want to fight for no nation.</p>"],
-["3. Place pixels","<ul><li>Open the <b>palette</b> (bottom-left), pick a color, then tap the map to place a pixel.</li><li>Pinch or scroll to zoom, drag to move around.</li><li>The <b>pencil</b> (bottom-right) turns on pen mode so you can draw by dragging; the <b>brush</b> button switches between 1x1 and 3x3.</li><li>Every pixel uses your <b>stock</b> (bar at the top), which refills over time.</li></ul>"],
+["3. Place pixels","<ul><li>Open the <b>palette</b> (bottom-left), pick a color, then tap the map to place a pixel.</li><li>Pinch or scroll to zoom, drag to move around.</li><li>The <b>pencil</b> (bottom-right) turns on pen mode so you can draw by dragging; the <b>brush</b> button opens brush sizes: 1x1 is free, 3x3 / 5x5 / 7x7 unlock after 30,000 / 100,000 / 500,000 pixels placed.</li><li>Every pixel uses your <b>stock</b> (bar at the top), which refills over time.</li></ul>"],
 ["4. Build with templates","<ul><li>Tap the <b>template button</b> (top-left, under settings) and press <b>Add template</b>.</li><li>Upload an image, type the top-left <b>X,Y</b> coordinates (or press <b>Center</b>) and add it.</li><li>Use the opacity slider to see the map under it. In <b>Settings</b>, set Pen mode to <b>By template</b> to paint the right colors automatically.</li><li>Team up with your country in chat and on our Discord (button next to download)!</li></ul>"]];
 var tutI=0,LOGO=document.getElementById("favi").href;$("wlogo").src=LOGO;
 function tutShow(i){tutI=i;var b=$("tutb");b.innerHTML="";var lg=document.createElement("img");lg.className="logo";lg.alt="PWG logo";lg.src=LOGO;b.appendChild(lg);var h=document.createElement("h3");h.style.marginTop="0";h.textContent=TUT[i][0];b.appendChild(h);var d=document.createElement("div");d.innerHTML=TUT[i][1];b.appendChild(d);
@@ -497,4 +503,4 @@ load(MAPURL,false);
 })();
 </script>
 </body>
-  </html>
+</html>
